@@ -726,6 +726,65 @@ with st.sidebar:
             del st.session_state[key]
 
         st.rerun()
+# LLM Recommendation Expander (Qwen AI)
+st.markdown("## 🔍 Get Personalized Investment Guidance")
+
+with st.expander("🤖 Ask Qwen AI for Personalized Guidance"):
+    st.markdown("### ✨ Personalized Financial Insight")
+
+    default_prompt = f"""
+    I am helping a user with the following investment profile:
+
+    - Monthly Income: ${user_income}
+    - Monthly Expenses: ${user_expenses}
+    - Required Savings: ${user_savings}
+    - Risk Tolerance: {user_risk}
+    - Selected Stocks: {', '.join([TICKER_TO_NAME.get(s, s) for s in selected_stocks])}
+    - Step Size: ${step_size}
+    - Minimum Stocks: {min_stock_count}
+
+    Based on this, please provide:
+    1. A recommended investment strategy (long-term or short-term).
+    2. Suitable sectors to invest in.
+    3. A basic diversification tip.
+    4. Two personalized tips to improve returns.
+
+    Keep your response human-readable and factual. Do not hallucinate stock names.
+    """
+
+    user_prompt = st.text_area("Customize your query to Qwen", value=default_prompt.strip(), height=300)
+
+    if st.button("🧠 Ask Qwen AI"):
+        st.info("Qwen is generating guidance... Please wait.")
+
+        API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen1.5-7B-Chat"
+        headers = {"Authorization": f"Bearer {st.secrets['huggingface_token']}"}
+
+        def query_huggingface(payload):
+            response = requests.post(API_URL, headers=headers, json=payload)
+            if response.status_code == 200:
+                try:
+                    return response.json()[0]["generated_text"]
+                except Exception:
+                    return "⚠️ Error parsing the model output."
+            else:
+                return f"❌ Error {response.status_code}: {response.text}"
+
+        payload = {
+            "inputs": user_prompt,
+            "parameters": {
+                "max_new_tokens": 512,
+                "temperature": 0.7,
+                "top_p": 0.9
+            }
+        }
+
+        with st.spinner("Thinking like an investment guru..."):
+            qwen_response = query_huggingface(payload)
+
+        st.markdown("#### 💬 Qwen AI's Guidance")
+        st.markdown(f"```markdown\n{qwen_response}\n```")
+
 
 # Fix to ensure portfolios are regenerated when parameters change
 # Add these important parameters to check for changes
