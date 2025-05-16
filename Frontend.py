@@ -757,7 +757,7 @@ with st.expander("🤖 Ask Qwen AI for Personalized Guidance"):
     if st.button("🧠 Ask Qwen AI"):
         st.info("Qwen is generating guidance... Please wait.")
 
-        API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen1.5-7B-Chat"
+        API_URL =  "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
         headers = {"Authorization": f"Bearer {st.secrets['huggingface_token']}"}
 
         def query_huggingface(payload):
